@@ -1,9 +1,15 @@
 package cx.myhome.ckoshien.slack.task;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +17,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import cx.myhome.ckoshien.slack.dto.IncrementDto;
 import cx.myhome.ckoshien.slack.entity.Channel;
 import cx.myhome.ckoshien.slack.entity.Message;
 import cx.myhome.ckoshien.slack.rest.RestClient;
 import cx.myhome.ckoshien.slack.rest.dto.ChannelsDto;
 import cx.myhome.ckoshien.slack.rest.dto.MessagesDto;
+import cx.myhome.ckoshien.slack.rest.dto.SlackDto;
 import cx.myhome.ckoshien.slack.service.ChannelService;
 import cx.myhome.ckoshien.slack.service.MessageService;
 
@@ -32,8 +40,10 @@ public class GetChannelTask {
 
 	@Value("${slack.token}")
 	private String token;
+	@Value("${slack.uri}")
+	private String slackUri;
 
-	@Scheduled(cron = "0 11 23 * * ?")
+	@Scheduled(cron = "0 0 7 * * ?")
 	public void doTask(){
 		logger.info("タスク開始");
 		RestClient client = new RestClient();
@@ -57,32 +67,52 @@ public class GetChannelTask {
 //				channelEntity.setLastCheckDate(new Date());
 				channelService.insert(channelEntity);
 				addMessages(channelEntity);
-
-
 			}
 		}
-
-
-
-//		Calendar cal=Calendar.getInstance();
-//		cal.setTime(new Date());
-//		String currentMonth = cal.get(Calendar.YEAR)+""+String.format("%02d", cal.get(Calendar.MONTH)+1);
-//		pool = Executors.newFixedThreadPool(8);
-//		List<Future<String>> processList = new ArrayList<Future<String>>();
-//		for(int i=11;i<=100;i++){
-//			@SuppressWarnings("unchecked")
-//			Future<String> future=pool.submit(new CallableBackUpResult(i,String.valueOf(i),currentMonth,rawMarkingService,songService,batchService));
-//			processList.add(future);
+		//テスト用
+		Date date = null;
+//		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+//		try {
+//			date=sdf.parse("2018-04-29");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
 //		}
-//		for (Future<String> future : processList) {
-//			   try {
-//			       String id = future.get();
-//			   } catch (InterruptedException e) {
-//			       logger.error("ERROR:",e);
-//			   } catch (ExecutionException e) {
-//				   logger.error("ERROR:",e);
-//			   }
-//		}
+		Calendar cal=Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, -1);
+		cal.set(Calendar.HOUR, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		date=cal.getTime();
+		List<IncrementDto> resultList = messageService.findIncrementMessage(date);
+		StringBuilder sb=new StringBuilder();
+		sb.append(cal.get(Calendar.YEAR)+"/"+(cal.get(Calendar.MONTH)+1)+"/"+cal.get(Calendar.DATE)+"の流量計：\n");
+		for(int i=0;i<resultList.size();i++){
+			//System.out.println(resultList.get(i).getName()+" "+resultList.get(i).getToday()+" "+resultList.get(i).getYesterday());
+			sb.append(resultList.get(i).getName()+":\n");
+			sb.append("2日間合計："+resultList.get(i).getSum()+"(");
+			sb.append("本日:"+resultList.get(i).getToday()+"posts,");
+			sb.append("昨日:"+resultList.get(i).getYesterday()+"posts),");
+			if(resultList.get(i).getIncrement()>0){
+				sb.append("増加数:arrow_upper_right:："+resultList.get(i).getIncrement()+"\n");
+			}else{
+				sb.append("増加数："+resultList.get(i).getIncrement()+"\n");
+			}
+
+		}
+		client = new RestClient();
+		header= new HashMap<String, String>();
+//		SlackDto entity=new SlackDto();
+//		entity.setText(new String(sb));
+//		entity.setUsername("SlackStreamBot");
+		try {
+			slackUri=slackUri+"&text="+URLEncoder.encode(new String(sb), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+		String jsonResult = client.sendRequest(slackUri, "GET", null, String.class,header);
+		logger.info(jsonResult.toString());
 		logger.info("タスク終了");
 
 	}
