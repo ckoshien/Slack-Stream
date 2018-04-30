@@ -43,7 +43,7 @@ public class GetChannelTask {
 	@Value("${slack.uri}")
 	private String slackUri;
 
-	@Scheduled(cron = "0 0 7 * * ?")
+	@Scheduled(cron = "0 54 11 * * ?")
 	public void doTask(){
 		logger.info("タスク開始");
 		RestClient client = new RestClient();
@@ -56,8 +56,10 @@ public class GetChannelTask {
 			if(oldChannel!=null){
 				oldChannel.setName(json.getChannels().get(i).getName());
 				oldChannel.setMemberCount(json.getChannels().get(i).getNum_members());
-				addMessages(oldChannel);
-				oldChannel.setLastCheckDate(new Date());
+				Date lastPostDate=addMessages(oldChannel);
+				if(lastPostDate!=null){
+					oldChannel.setLastCheckDate(lastPostDate);
+				}
 				channelService.update(oldChannel);
 			}else{
 				Channel channelEntity=new Channel();
@@ -116,10 +118,10 @@ public class GetChannelTask {
 		logger.info("タスク終了");
 
 	}
-	public void addMessages(Channel channel){
+	public Date addMessages(Channel channel){
 		String channelUri="https://slack.com/api/channels.history?token="+token+"&channel="+channel.getId();
 		if(channel.getLastCheckDate()!=null){
-			channelUri=channelUri+"&oldest="+channel.getLastCheckDate().getTime();
+			channelUri=channelUri+"&oldest="+channel.getLastCheckDate().getTime()/1000;
 		}
 		RestClient client=new RestClient();
 		HashMap<String, String> header=new HashMap<String, String>();
@@ -137,6 +139,11 @@ public class GetChannelTask {
 				}
 			}
 
+		}
+		if(json.getMessages().size()>0){
+			return new Date((long) (1000*json.getMessages().get(0).getTs()));
+		}else{
+			return null;
 		}
 	}
 
