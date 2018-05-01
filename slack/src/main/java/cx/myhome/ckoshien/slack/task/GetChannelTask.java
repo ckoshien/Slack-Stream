@@ -43,7 +43,7 @@ public class GetChannelTask {
 	@Value("${slack.uri}")
 	private String slackUri;
 
-	@Scheduled(cron = "0 54 11 * * ?")
+	@Scheduled(cron = "0 0 7 * * ?")
 	public void doTask(){
 		logger.info("タスク開始");
 		RestClient client = new RestClient();
@@ -88,10 +88,11 @@ public class GetChannelTask {
 		date=cal.getTime();
 		List<IncrementDto> resultList = messageService.findIncrementMessage(date);
 		StringBuilder sb=new StringBuilder();
+		sb.append("slack_stream_botです。\n");
 		sb.append(cal.get(Calendar.YEAR)+"/"+(cal.get(Calendar.MONTH)+1)+"/"+cal.get(Calendar.DATE)+"の流量計：\n");
 		for(int i=0;i<resultList.size();i++){
 			//System.out.println(resultList.get(i).getName()+" "+resultList.get(i).getToday()+" "+resultList.get(i).getYesterday());
-			sb.append(resultList.get(i).getName()+":\n");
+			sb.append(":marshmallow_not_flying:#"+resultList.get(i).getName()+":\n");
 			sb.append("2日間合計："+resultList.get(i).getSum()+"(");
 			sb.append("本日:"+resultList.get(i).getToday()+"posts,");
 			sb.append("昨日:"+resultList.get(i).getYesterday()+"posts),");
