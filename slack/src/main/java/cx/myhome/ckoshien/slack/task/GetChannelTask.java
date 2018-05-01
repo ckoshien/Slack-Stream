@@ -66,9 +66,11 @@ public class GetChannelTask {
 				channelEntity.setId(json.getChannels().get(i).getId());
 				channelEntity.setMemberCount(json.getChannels().get(i).getNum_members());
 				channelEntity.setName(json.getChannels().get(i).getName());
-//				channelEntity.setLastCheckDate(new Date());
+				//channelEntity.setLastCheckDate(new Date());
 				channelService.insert(channelEntity);
-				addMessages(channelEntity);
+				Date lastPostDate=addMessages(channelEntity);
+				channelEntity.setLastCheckDate(lastPostDate);
+				channelService.update(channelEntity);
 			}
 		}
 		//テスト用
@@ -105,9 +107,6 @@ public class GetChannelTask {
 		}
 		client = new RestClient();
 		header= new HashMap<String, String>();
-//		SlackDto entity=new SlackDto();
-//		entity.setText(new String(sb));
-//		entity.setUsername("SlackStreamBot");
 		try {
 			slackUri=slackUri+"&text="+URLEncoder.encode(new String(sb), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -133,6 +132,7 @@ public class GetChannelTask {
 				message.setChannelId(channel.getId());
 				message.setPostedTime(new Date((long) (1000*json.getMessages().get(j).getTs())));
 				message.setUserId(json.getMessages().get(j).getUser());
+				//message.setText(json.getMessages().get(j).getText());
 				try{
 					messageService.insert(message);
 				}catch(Exception e){

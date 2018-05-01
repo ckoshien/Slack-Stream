@@ -32,5 +32,4 @@ public class PostDto {
 	public void setSubtype(String subtype) {
 		this.subtype = subtype;
 	}
-
 }
