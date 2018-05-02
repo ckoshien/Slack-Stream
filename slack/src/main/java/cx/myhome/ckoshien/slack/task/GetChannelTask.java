@@ -84,7 +84,7 @@ public class GetChannelTask {
 		Calendar cal=Calendar.getInstance();
 		cal.setTime(new Date());
 		cal.add(Calendar.DATE, -1);
-		cal.set(Calendar.HOUR, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		date=cal.getTime();
@@ -113,6 +113,7 @@ public class GetChannelTask {
 			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 		}
+		logger.info((new String(sb)));
 		String jsonResult = client.sendRequest(slackUri, "GET", null, String.class,header);
 		logger.info(jsonResult.toString());
 		logger.info("タスク終了");
@@ -132,12 +133,15 @@ public class GetChannelTask {
 				message.setChannelId(channel.getId());
 				message.setPostedTime(new Date((long) (1000*json.getMessages().get(j).getTs())));
 				message.setUserId(json.getMessages().get(j).getUser());
-				//message.setText(json.getMessages().get(j).getText());
-				try{
-					messageService.insert(message);
-				}catch(Exception e){
-					logger.error("ERROR:",e);
+				Message oldMessage = messageService.findByPK(channel.getId(), new Date((long) (1000*json.getMessages().get(j).getTs())));
+				if(oldMessage==null){
+					try{
+						messageService.insert(message);
+					}catch(Exception e){
+						logger.error("ERROR:",e);
+					}
 				}
+
 			}
 
 		}

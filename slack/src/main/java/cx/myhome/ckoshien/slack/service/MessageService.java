@@ -35,11 +35,12 @@ public class MessageService {
 	}
 
 
-	public Channel findById(String id){
-		SqlResource selectChannelSql = new ClasspathSqlResource("selectChannelById.sql");
-		HashMap<String, String> param=new HashMap<String, String>();
+	public Message findByPK(String id,Date postedTime){
+		SqlResource selectChannelSql = new ClasspathSqlResource("selectMessageByPK.sql");
+		HashMap<String, Object> param=new HashMap<String, Object>();
 		param.put("id", id);
-		return sqlManager.getSingleResult(Channel.class,selectChannelSql,param);
+		param.put("postedTime", postedTime);
+		return sqlManager.getSingleResult(Message.class,selectChannelSql,param);
 	}
 
 	public List<IncrementDto> findIncrementMessage(Date date){
