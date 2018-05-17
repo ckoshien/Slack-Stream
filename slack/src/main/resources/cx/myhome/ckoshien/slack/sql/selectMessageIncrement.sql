@@ -42,5 +42,6 @@ on field2.channel_id=m.channel_id
 inner join channel c
 on c.id=m.channel_id
 group by m.channel_id
-having sum>0
+having sum>2
 order by sum desc,increment desc,today desc
+limit 10

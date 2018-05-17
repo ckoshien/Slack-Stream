@@ -55,7 +55,7 @@ public class GetChannelTask {
 	private String filepath;
 
 
-	@Scheduled(cron = "0 49 9 * * ?")
+	@Scheduled(cron = "0 0 7 * * ?")
 	public void doTask(){
 		logger.info("タスク開始");
 		RestClient client = new RestClient();
@@ -128,8 +128,8 @@ public class GetChannelTask {
 		}
 		logger.info((new String(sb)));
 		postClient.post(file);
-		//String jsonResult = client.sendRequest(slackUri, "GET", null, String.class,header);
-		//logger.info(jsonResult.toString());
+		String jsonResult = client.sendRequest(slackUri, "GET", null, String.class,header);
+		logger.info(jsonResult.toString());
 		logger.info("タスク終了");
 
 	}
@@ -187,12 +187,12 @@ public class GetChannelTask {
 		DefaultCategoryDataset data = new DefaultCategoryDataset();
 
 		for(int i=0;i<channels.size();i++){
-				data.addValue(channels.get(i).getCnt1(), channels.get(i).getName(), dateList.get(0));
-				data.addValue(channels.get(i).getCnt2(), channels.get(i).getName(), dateList.get(1));
-				data.addValue(channels.get(i).getCnt3(), channels.get(i).getName(), dateList.get(2));
-				data.addValue(channels.get(i).getCnt4(), channels.get(i).getName(), dateList.get(3));
-				data.addValue(channels.get(i).getCnt5(), channels.get(i).getName(), dateList.get(4));
-				data.addValue(channels.get(i).getCnt6(), channels.get(i).getName(), dateList.get(5));
+				data.addValue(channels.get(i).getCnt6(), channels.get(i).getName(), dateList.get(0));
+				data.addValue(channels.get(i).getCnt5(), channels.get(i).getName(), dateList.get(1));
+				data.addValue(channels.get(i).getCnt4(), channels.get(i).getName(), dateList.get(2));
+				data.addValue(channels.get(i).getCnt3(), channels.get(i).getName(), dateList.get(3));
+				data.addValue(channels.get(i).getCnt2(), channels.get(i).getName(), dateList.get(4));
+				data.addValue(channels.get(i).getCnt1(), channels.get(i).getName(), dateList.get(5));
 
 		}
 		ChartFactory.setChartTheme(StandardChartTheme.createLegacyTheme());
