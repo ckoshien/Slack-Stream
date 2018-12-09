@@ -47,6 +47,10 @@ public class RestClient {
 		try {
 			request = builder.build(new URI(uri), method);
 			response=client.handle(request);
+			if(response.getStatus()!=200){
+				SlackLogger logger=new SlackLogger();
+				logger.info(response);
+			}
 			json=response.getEntity(cls);
 		}catch (URISyntaxException e) {
 			e.printStackTrace();
